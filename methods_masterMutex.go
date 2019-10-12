@@ -1,7 +1,6 @@
 package namespacedMutex
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -19,8 +18,6 @@ func (d *Datum) masterMutexHash(namespace string) int {
 		hash ^= uint64(b)
 		hash *= masterMutexHashPrime
 	}
-
-	fmt.Println("DEBUG: MASTER MUTEX", namespace, hash%count, hash)
 
 	return int(hash % count)
 }
