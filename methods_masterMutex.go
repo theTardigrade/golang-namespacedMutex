@@ -5,14 +5,19 @@ import (
 	"sync"
 )
 
+const (
+	masterMutexHashPrime  uint64 = 0x00000100000001b3
+	masterMutexHashOffset uint64 = 0xcbf29ce484222325
+)
+
 func (d *Datum) masterMutexHash(namespace string) int {
-	var hash uint = 0x811c9dc5
-	count := uint(d.masterMutexesBucketCount)
+	hash := masterMutexHashOffset
+	count := uint64(d.masterMutexesBucketCount)
 
 	for i := len(namespace) - 1; i >= 0; i-- {
 		b := namespace[i]
-		hash ^= uint(b)
-		hash *= 0x01000193
+		hash ^= uint64(b)
+		hash *= masterMutexHashPrime
 	}
 
 	fmt.Println("DEBUG: MASTER MUTEX", namespace, hash%count, hash)
