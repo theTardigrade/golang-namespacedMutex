@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-func (d *Datum) key(primaryNamespace string, secondaryNamespaces []string) string {
+func (d *Datum) cacheKey(primaryNamespace string, secondaryNamespaces []string) string {
 	var builder strings.Builder
 
 	builder.WriteString(primaryNamespace)
@@ -23,13 +23,13 @@ func (d *Datum) key(primaryNamespace string, secondaryNamespaces []string) strin
 }
 
 func (d *Datum) Get(primaryNamespace string, secondaryNamespaces ...string) *sync.Mutex {
-	key := d.key(primaryNamespace, secondaryNamespaces)
-	masterMutex := d.masterMutex(key)
+	cacheKey := d.cacheKey(primaryNamespace, secondaryNamespaces)
+	masterMutex := d.masterMutex(cacheKey)
 
 	defer masterMutex.Unlock()
 	masterMutex.Lock()
 
-	if mutexInterface, ok := d.cache.Get(key); ok {
+	if mutexInterface, ok := d.cache.Get(cacheKey); ok {
 		if mutex, ok := mutexInterface.(*sync.Mutex); ok {
 			return mutex
 		}
@@ -37,7 +37,7 @@ func (d *Datum) Get(primaryNamespace string, secondaryNamespaces ...string) *syn
 
 	mutex := &sync.Mutex{}
 
-	d.cache.Set(key, mutex)
+	d.cache.Set(cacheKey, mutex)
 
 	return mutex
 }
