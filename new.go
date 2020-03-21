@@ -26,7 +26,20 @@ func New(opts *Options) *Datum {
 
 	d.initOptions(opts)
 
-	d.cache = cache.NewCache(opts.CacheExpiryDuration, opts.CacheMaxValues)
+	d.cache = cache.NewCacheWithOptions(cache.Options{
+		ExpiryDuration: opts.CacheExpiryDuration,
+		MaxValues:      opts.CacheMaxValues,
+		PreDeletionFunc: func(key string, value interface{}, setTime time.Time) {
+			d.masterMutex(key).Lock()
+
+			if mutex, ok := value.(*sync.Mutex); ok {
+				mutex.Lock()
+			}
+		},
+		PostDeletionFunc: func(key string, value interface{}, setTime time.Time) {
+			d.masterMutex(key).Unlock()
+		},
+	})
 
 	bc := d.masterMutexesBucketCount
 

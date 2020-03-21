@@ -6,17 +6,19 @@ import (
 )
 
 func (d *Datum) cacheKey(primaryNamespace string, secondaryNamespaces []string) string {
+	if len(secondaryNamespaces) == 0 {
+		return primaryNamespace
+	}
+
 	var builder strings.Builder
 
 	builder.WriteString(primaryNamespace)
 
-	if len(secondaryNamespaces) > 0 {
-		separator := d.namespaceSeparator
+	separator := d.namespaceSeparator
 
-		for _, n := range secondaryNamespaces {
-			builder.WriteString(separator)
-			builder.WriteString(n)
-		}
+	for _, n := range secondaryNamespaces {
+		builder.WriteString(separator)
+		builder.WriteString(n)
 	}
 
 	return builder.String()
