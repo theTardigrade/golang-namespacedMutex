@@ -9,13 +9,21 @@ const (
 	optionsDefaultNamespaceSeparator  = "__::__"
 )
 
+const (
+	optionsMaxBucketCount = 1 << 30
+)
+
 func (d *Datum) initOptions(opts *Options) {
 	if opts == nil {
 		*opts = Options{}
 	}
 
 	if opts.MasterMutexesBucketCount > 0 {
-		d.masterMutexesBucketCount = opts.MasterMutexesBucketCount
+		if opts.MasterMutexesBucketCount <= optionsMaxBucketCount {
+			d.masterMutexesBucketCount = opts.MasterMutexesBucketCount
+		} else {
+			d.masterMutexesBucketCount = optionsMaxBucketCount
+		}
 	} else {
 		d.masterMutexesBucketCount = optionsDefaultBucketCount
 	}
