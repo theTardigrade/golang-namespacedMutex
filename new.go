@@ -26,6 +26,17 @@ func New(opts *Options) *Datum {
 
 	d.initOptions(opts)
 
+	{
+		bc := d.masterMutexesBucketCount
+
+		d.masterMutexes = make([]*sync.Mutex, bc)
+
+		for bc--; bc >= 0; bc-- {
+			m := sync.Mutex{}
+			d.masterMutexes[bc] = &m
+		}
+	}
+
 	d.cache = cache.NewCacheWithOptions(cache.Options{
 		ExpiryDuration: opts.CacheExpiryDuration,
 		MaxValues:      opts.CacheMaxValues,
@@ -40,15 +51,6 @@ func New(opts *Options) *Datum {
 			d.masterMutex(key).Unlock()
 		},
 	})
-
-	bc := d.masterMutexesBucketCount
-
-	d.masterMutexes = make([]*sync.Mutex, bc)
-
-	for bc--; bc >= 0; bc-- {
-		m := sync.Mutex{}
-		d.masterMutexes[bc] = &m
-	}
 
 	return &d
 }
