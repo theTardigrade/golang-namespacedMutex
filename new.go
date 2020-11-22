@@ -8,16 +8,16 @@ import (
 )
 
 type Datum struct {
-	masterMutexesBucketCount int
-	masterMutexes            []*sync.Mutex
 	cache                    *cache.Cache
+	masterMutexes            []*sync.Mutex
+	masterMutexesBucketCount int
 	namespaceSeparator       string
 }
 
 type Options struct {
-	MasterMutexesBucketCount int
 	CacheExpiryDuration      time.Duration
 	CacheMaxValues           int
+	MasterMutexesBucketCount int
 	NamespaceSeparator       string
 }
 
@@ -43,7 +43,7 @@ func New(opts *Options) *Datum {
 		PreDeletionFunc: func(key string, value interface{}, setTime time.Time) {
 			d.masterMutex(key).Lock()
 
-			if mutex, ok := value.(*sync.Mutex); ok {
+			if mutex, ok := value.(*sync.RWMutex); ok {
 				mutex.Lock()
 			}
 		},

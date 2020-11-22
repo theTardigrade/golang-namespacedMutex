@@ -24,7 +24,7 @@ func (d *Datum) cacheKey(primaryNamespace string, secondaryNamespaces []string) 
 	return builder.String()
 }
 
-func (d *Datum) Get(primaryNamespace string, secondaryNamespaces ...string) (mutex *sync.Mutex) {
+func (d *Datum) Get(primaryNamespace string, secondaryNamespaces ...string) (mutex *sync.RWMutex) {
 	cacheKey := d.cacheKey(primaryNamespace, secondaryNamespaces)
 	masterMutex := d.masterMutex(cacheKey)
 
@@ -32,12 +32,12 @@ func (d *Datum) Get(primaryNamespace string, secondaryNamespaces ...string) (mut
 	masterMutex.Lock()
 
 	if mutexInterface, ok := d.cache.Get(cacheKey); ok {
-		if mutex, ok = mutexInterface.(*sync.Mutex); ok {
+		if mutex, ok = mutexInterface.(*sync.RWMutex); ok {
 			return
 		}
 	}
 
-	mutex = &sync.Mutex{}
+	mutex = &sync.RWMutex{}
 
 	d.cache.Set(cacheKey, mutex)
 
