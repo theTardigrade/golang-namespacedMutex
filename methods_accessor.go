@@ -64,6 +64,11 @@ func (g *GetLockedMutex) Unlock() {
 	g.isUnlocked = true
 }
 
+// Raw returns the underlying RWMutex pointer
+func (g *GetLockedMutex) Raw() *sync.RWMutex {
+	return g.realMutex
+}
+
 // GetLocked returns a locked mutex based on the primary and secondary namespaces;
 // it must be unlocked after use. The lock will be either read-only or read-write.
 func (d *Datum) GetLocked(isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) (mutex *GetLockedMutex) {
