@@ -24,32 +24,85 @@ func (d *Datum) cacheKey(primaryNamespace string, secondaryNamespaces []string) 
 	return builder.String()
 }
 
+// GetLockedMutex is returned from the GetLocked function;
+// it is a wrapper around a read-write mutex.
+type GetLockedMutex struct {
+	realMutex   *sync.RWMutex
+	unlockMutex sync.Mutex
+	isReadOnly  bool
+	isUnlocked  bool
+}
+
+func (g *GetLockedMutex) lock() {
+	if g.isReadOnly {
+		g.realMutex.RLock()
+	} else {
+		g.realMutex.Lock()
+	}
+}
+
+func (g *GetLockedMutex) unlock() {
+	if g.isReadOnly {
+		g.realMutex.RUnlock()
+	} else {
+		g.realMutex.Unlock()
+	}
+}
+
+// Unlock must be called when the mutex is no longer in use.
+// It can be called multiple times without triggering a panic,
+// but it should ideally only be called once after every use.
+func (g *GetLockedMutex) Unlock() {
+	defer g.unlockMutex.Unlock()
+	g.unlockMutex.Lock()
+
+	if g.isUnlocked {
+		return
+	}
+
+	g.unlock()
+	g.isUnlocked = true
+}
+
 // GetLocked returns a locked mutex based on the primary and secondary namespaces;
-// it must be unlocked after use. The lock will be either read-only or read-and-write.
-func (d *Datum) GetLocked(readOnly bool, primaryNamespace string, secondaryNamespaces ...string) (mutex *sync.RWMutex) {
+// it must be unlocked after use. The lock will be either read-only or read-write.
+func (d *Datum) GetLocked(isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) (mutex *GetLockedMutex) {
 	cacheKey := d.cacheKey(primaryNamespace, secondaryNamespaces)
 	masterMutex := d.masterMutex(cacheKey)
 
 	defer masterMutex.Unlock()
 	masterMutex.Lock()
 
+	var realMutex *sync.RWMutex
+
 	defer func() {
-		if readOnly {
-			mutex.RLock()
-		} else {
-			mutex.Lock()
+		mutex = &GetLockedMutex{
+			realMutex:  realMutex,
+			isReadOnly: isReadOnly,
 		}
+		mutex.lock()
 	}()
 
-	if mutexInterface, ok := d.cache.Get(cacheKey); ok {
-		if mutex, ok = mutexInterface.(*sync.RWMutex); ok {
+	if realMutexInterface, ok := d.cache.Get(cacheKey); ok {
+		if realMutex, ok = realMutexInterface.(*sync.RWMutex); ok {
 			return
 		}
 	}
 
-	mutex = &sync.RWMutex{}
+	realMutex = &sync.RWMutex{}
 
-	d.cache.Set(cacheKey, mutex)
+	d.cache.Set(cacheKey, realMutex)
 
 	return
+}
+
+// Use allows code to be run within the handler function
+// while the mutex is automatically locked and unlocked
+// before and after use. It abstracts away the problem
+// of mutual exclusion.
+func (d *Datum) Use(handler func(), isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) {
+	mutex := d.GetLocked(isReadOnly, primaryNamespace, secondaryNamespaces...)
+	defer mutex.unlock()
+
+	handler()
 }
