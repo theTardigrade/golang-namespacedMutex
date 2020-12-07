@@ -24,12 +24,12 @@ type Options struct {
 	NamespaceSeparator       string
 }
 
-// New creates a new Datum based on the given Options;
-// default Options will be used, if necessary.
-func New(opts *Options) *Datum {
+// New creates a new Datum based on the given options;
+// default options will be used, if necessary.
+func New(opts Options) *Datum {
 	d := Datum{}
 
-	d.initOptions(opts)
+	d.initOptions(&opts)
 
 	{
 		bc := d.masterMutexesBucketCount
