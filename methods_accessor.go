@@ -64,7 +64,8 @@ func (g *GetLockedMutex) Unlock() {
 	g.isUnlocked = true
 }
 
-// Raw returns the underlying RWMutex pointer
+// Raw returns the underlying RWMutex pointer.
+// There should ordinarily be no need to call this function.
 func (g *GetLockedMutex) Raw() *sync.RWMutex {
 	return g.realMutex
 }
