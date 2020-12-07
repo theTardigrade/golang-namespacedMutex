@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/theTardigrade/cache"
+	cache "github.com/theTardigrade/golang-cache"
 )
 
 type Datum struct {
@@ -40,14 +40,14 @@ func New(opts *Options) *Datum {
 	d.cache = cache.NewCacheWithOptions(cache.Options{
 		ExpiryDuration: opts.CacheExpiryDuration,
 		MaxValues:      opts.CacheMaxValues,
-		PreDeletionFunc: func(key string, value interface{}, setTime time.Time) {
+		UnsetPreFunc: func(key string, value interface{}, setTime time.Time) {
 			d.masterMutex(key).Lock()
 
 			if mutex, ok := value.(*sync.RWMutex); ok {
-				mutex.Lock()
+				mutex.Lock() // render mutex unusable
 			}
 		},
-		PostDeletionFunc: func(key string, value interface{}, setTime time.Time) {
+		UnsetPostFunc: func(key string, value interface{}, setTime time.Time) {
 			d.masterMutex(key).Unlock()
 		},
 	})
