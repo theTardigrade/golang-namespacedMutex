@@ -59,3 +59,9 @@ func New(opts Options) *Datum {
 
 	return &d
 }
+
+// NewDefault is equivalent to the New constructor
+// function with default options.
+func NewDefault() *Datum {
+	return New(Options{})
+}

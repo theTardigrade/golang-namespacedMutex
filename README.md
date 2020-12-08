@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	m = namespacedMutex.New(namespacedMutex.Options{})
+	m = namespacedMutex.NewDefault()
 	n int
 )
 
