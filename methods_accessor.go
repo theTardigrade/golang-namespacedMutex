@@ -24,80 +24,34 @@ func (d *Datum) cacheKey(primaryNamespace string, secondaryNamespaces []string) 
 	return builder.String()
 }
 
-// GetLockedMutex is returned from the GetLocked function;
-// it is a wrapper around a read-write mutex.
-type GetLockedMutex struct {
-	realMutex   *sync.RWMutex
-	unlockMutex sync.Mutex
-	isReadOnly  bool
-	isUnlocked  bool
-}
-
-func (g *GetLockedMutex) lock() {
-	if g.isReadOnly {
-		g.realMutex.RLock()
-	} else {
-		g.realMutex.Lock()
-	}
-}
-
-func (g *GetLockedMutex) unlock() {
-	if g.isReadOnly {
-		g.realMutex.RUnlock()
-	} else {
-		g.realMutex.Unlock()
-	}
-}
-
-// Unlock must be called when the mutex is no longer in use.
-// It can be called multiple times without triggering a panic,
-// but it should ideally only be called once after every use.
-func (g *GetLockedMutex) Unlock() {
-	defer g.unlockMutex.Unlock()
-	g.unlockMutex.Lock()
-
-	if g.isUnlocked {
-		return
-	}
-
-	g.unlock()
-	g.isUnlocked = true
-}
-
-// Raw returns the underlying RWMutex pointer.
-// There should ordinarily be no need to call this function.
-func (g *GetLockedMutex) Raw() *sync.RWMutex {
-	return g.realMutex
-}
-
 // GetLocked returns a locked mutex based on the primary and secondary namespaces;
 // it must be unlocked after use. The lock will be either read-only or read-write.
-func (d *Datum) GetLocked(isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) (mutex *GetLockedMutex) {
+func (d *Datum) GetLocked(isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) (mutex *MutexWrapper) {
 	cacheKey := d.cacheKey(primaryNamespace, secondaryNamespaces)
 	masterMutex := d.masterMutex(cacheKey)
 
 	defer masterMutex.Unlock()
 	masterMutex.Lock()
 
-	var realMutex *sync.RWMutex
+	var rawMutex *sync.RWMutex
 
 	defer func() {
-		mutex = &GetLockedMutex{
-			realMutex:  realMutex,
+		mutex = &MutexWrapper{
+			rawMutex:   rawMutex,
 			isReadOnly: isReadOnly,
 		}
 		mutex.lock()
 	}()
 
 	if realMutexInterface, ok := d.cache.Get(cacheKey); ok {
-		if realMutex, ok = realMutexInterface.(*sync.RWMutex); ok {
+		if rawMutex, ok = realMutexInterface.(*sync.RWMutex); ok {
 			return
 		}
 	}
 
-	realMutex = &sync.RWMutex{}
+	rawMutex = &sync.RWMutex{}
 
-	d.cache.Set(cacheKey, realMutex)
+	d.cache.Set(cacheKey, rawMutex)
 
 	return
 }
