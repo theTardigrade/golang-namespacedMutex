@@ -1,6 +1,7 @@
 package namespacedMutex
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -49,10 +50,16 @@ func New(opts Options) *Datum {
 			d.masterMutex(key).Lock()
 
 			if mutex, ok := value.(*sync.RWMutex); ok {
+				fmt.Println("SET", ok, key, mutex)
 				mutex.Lock() // render mutex unusable
 			}
 		},
 		UnsetPostFunc: func(key string, value interface{}, setTime time.Time) {
+			if mutex, ok := value.(*sync.RWMutex); ok {
+				fmt.Println("UNSET", ok, key, mutex)
+				mutex.Unlock()
+			}
+
 			d.masterMutex(key).Unlock()
 		},
 	})
