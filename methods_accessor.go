@@ -24,22 +24,45 @@ func (d *Datum) cacheKey(primaryNamespace string, secondaryNamespaces []string) 
 	return builder.String()
 }
 
-func (d *Datum) Get(primaryNamespace string, secondaryNamespaces ...string) (mutex *sync.RWMutex) {
+// GetLocked returns a locked mutex based on the primary and secondary namespaces;
+// it must be unlocked after use. The lock will be either read-only or read-write.
+func (d *Datum) GetLocked(isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) (mutex *MutexWrapper) {
 	cacheKey := d.cacheKey(primaryNamespace, secondaryNamespaces)
 	masterMutex := d.masterMutex(cacheKey)
 
 	defer masterMutex.Unlock()
 	masterMutex.Lock()
 
-	if mutexInterface, ok := d.cache.Get(cacheKey); ok {
-		if mutex, ok = mutexInterface.(*sync.RWMutex); ok {
+	var rawMutex *sync.RWMutex
+
+	defer func() {
+		mutex = &MutexWrapper{
+			rawMutex:   rawMutex,
+			isReadOnly: isReadOnly,
+		}
+		mutex.lock()
+	}()
+
+	if realMutexInterface, ok := d.cache.Get(cacheKey); ok {
+		if rawMutex, ok = realMutexInterface.(*sync.RWMutex); ok {
 			return
 		}
 	}
 
-	mutex = &sync.RWMutex{}
+	rawMutex = &sync.RWMutex{}
 
-	d.cache.Set(cacheKey, mutex)
+	d.cache.Set(cacheKey, rawMutex)
 
 	return
+}
+
+// Use allows code to be run within the handler function
+// while the mutex is automatically locked and unlocked
+// before and after use. It abstracts away the problem
+// of mutual exclusion.
+func (d *Datum) Use(handler func(), isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) {
+	mutex := d.GetLocked(isReadOnly, primaryNamespace, secondaryNamespaces...)
+	defer mutex.unlock()
+
+	handler()
 }
