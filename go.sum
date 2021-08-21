@@ -1,6 +1,7 @@
 github.com/theTardigrade/golang-cache v1.0.0 h1:KmbGeqyACpEIfj8AQAFuqfgBMDIKCblFdE5DbajKjYc=
 github.com/theTardigrade/golang-cache v1.0.0/go.mod h1:CNi77BqvLhsXaY5cldy+rybqpr9dUhLUZ5czO+QcYB4=
-github.com/theTardigrade/golang-hash v0.0.0-20210819171255-af77fb6bdc9b h1:NJADMtaDKIghk7M40WmMk4Xnq/HLaWc0NbZH+hJNUAE=
-github.com/theTardigrade/golang-hash v0.0.0-20210819171255-af77fb6bdc9b/go.mod h1:/H6EhVuFbQdVSmBiFrGDI7uyOE6u5nFv9MiOTZGM8io=
-github.com/theTardigrade/golang-tasks v0.0.0-20201207170240-6826d532f3a0 h1:83v26hOP/wnYYa2MfzF0gvxXGEHzxxja5PlFEEdVFL0=
+github.com/theTardigrade/golang-hash v1.0.0 h1:WlbwBtpUG/5orebuKutp1hs7l1wdltwMlsRtRKbxgC4=
+github.com/theTardigrade/golang-hash v1.0.0/go.mod h1:/H6EhVuFbQdVSmBiFrGDI7uyOE6u5nFv9MiOTZGM8io=
 github.com/theTardigrade/golang-tasks v0.0.0-20201207170240-6826d532f3a0/go.mod h1:xuCB2NDTRxcXv2a8ZhicFFFpbZghk4LQ7VGXiAfI7SI=
+github.com/theTardigrade/golang-tasks v1.0.0 h1:6UgQOjmDwlKVDvAP2oAYvGbQr7HYvuZUDBgEEKeD7t4=
+github.com/theTardigrade/golang-tasks v1.0.0/go.mod h1:98SBk8kewYFZ5f7HTeFrRFj+HfMdNt6B5vXII553yM0=
