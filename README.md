@@ -1,9 +1,5 @@
 # golang-namespacedMutex
 
-## Support
-
-If you use or appreciate this package in any way, please consider donating at [PayPal](https://www.paypal.me/jismithpp).
-
 ## Example
 
 ```golang
