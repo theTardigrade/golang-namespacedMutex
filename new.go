@@ -1,9 +1,7 @@
 package namespacedMutex
 
 import (
-	"fmt"
 	"sync"
-	"time"
 
 	cache "github.com/theTardigrade/golang-cache"
 )
@@ -19,8 +17,6 @@ type Datum struct {
 
 // Options is used in the New constructor function.
 type Options struct {
-	CacheExpiryDuration                 time.Duration
-	CacheMaxValues                      int
 	MasterMutexesBucketCount            int
 	MasterMutexesBucketCountMustBePrime bool
 	NamespaceSeparator                  string
@@ -45,24 +41,8 @@ func New(opts Options) *Datum {
 	}
 
 	d.cache = cache.NewCacheWithOptions(cache.Options{
-		ExpiryDuration: opts.CacheExpiryDuration,
-		MaxValues:      opts.CacheMaxValues,
-		UnsetPreFunc: func(key string, value interface{}, setTime time.Time) {
-			d.masterMutex(key).Lock()
-
-			if mutex, ok := value.(*sync.RWMutex); ok {
-				fmt.Println("SET", ok, key, mutex)
-				mutex.Lock() // render mutex unusable
-			}
-		},
-		UnsetPostFunc: func(key string, value interface{}, setTime time.Time) {
-			if mutex, ok := value.(*sync.RWMutex); ok {
-				fmt.Println("UNSET", ok, key, mutex)
-				mutex.Unlock()
-			}
-
-			d.masterMutex(key).Unlock()
-		},
+		ExpiryDuration: -1,
+		MaxValues:      -1,
 	})
 
 	return &d

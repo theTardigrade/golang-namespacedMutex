@@ -1,16 +1,12 @@
 package namespacedMutex
 
 import (
-	"time"
-
 	prime "github.com/theTardigrade/golang-prime"
 )
 
 const (
-	optionsDefaultBucketCount         = 1 << 10
-	optionsDefaultCacheMaxValues      = 1 << 16
-	optionsDefaultCacheExpiryDuration = time.Hour
-	optionsDefaultNamespaceSeparator  = "__::__"
+	optionsDefaultBucketCount        = 1 << 10
+	optionsDefaultNamespaceSeparator = "__::__"
 )
 
 const (
@@ -34,14 +30,6 @@ func (d *Datum) initOptions(opts *Options) {
 
 	if opts.MasterMutexesBucketCountMustBePrime {
 		d.masterMutexesBucketCount = prime.Next(d.masterMutexesBucketCount)
-	}
-
-	if opts.CacheMaxValues == 0 {
-		opts.CacheMaxValues = optionsDefaultCacheMaxValues
-	}
-
-	if opts.CacheExpiryDuration == 0 {
-		opts.CacheExpiryDuration = optionsDefaultCacheExpiryDuration
 	}
 
 	if opts.NamespaceSeparator == "" {

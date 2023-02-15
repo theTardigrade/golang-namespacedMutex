@@ -19,14 +19,12 @@ import (
 
 var (
 	mutexManager = namespacedMutex.New(namespacedMutex.Options{
-		CacheExpiryDuration:                 -1,
-		CacheMaxValues:                      -1,
-		MasterMutexesBucketCount:            1 << 20,
+		MasterMutexesBucketCount:            1 << 5,
 		MasterMutexesBucketCountMustBePrime: true,
 	})
 )
 
-const iterations = 21
+const iterations = 100
 
 func main() {
 	var numbers []string
