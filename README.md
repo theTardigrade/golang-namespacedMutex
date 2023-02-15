@@ -23,12 +23,12 @@ var mutexManager = namespacedMutex.New(namespacedMutex.Options{
 })
 
 func main() {
-	var numbers []string
+	numbers := make([]string, 0, 100)
 	var wg sync.WaitGroup
 
-	wg.Add(iterations)
+	wg.Add(cap(numbers))
 
-	for i := 1; i <= 100; i++ {
+	for i := 1; i <= cap(numbers); i++ {
 		go func(i int) {
 			defer wg.Done()
 
@@ -43,8 +43,26 @@ func main() {
 	}
 
 	wg.Wait()
+	wg.Add(len(numbers))
 
-	fmt.Println(numbers)
+	var numbersList string
+
+	for i := 0; i < len(numbers); i++ {
+		go func(i int) {
+			defer wg.Done()
+
+			// you can also use the mutex directly by calling
+			// the GetLocked function
+			mutex := mutexManager.GetLocked(true, "another-namespace")
+			defer mutex.Unlock()
+
+			numbersList += "(" + numbers[i] + ")"
+		}(i)
+	}
+
+	wg.Wait()
+
+	fmt.Println(numbersList)
 	fmt.Println(len(numbers))
 }
 ```
