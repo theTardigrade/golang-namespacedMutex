@@ -7,41 +7,45 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"sync"
 
 	namespacedMutex "github.com/theTardigrade/golang-namespacedMutex"
 )
 
 var (
-	m = namespacedMutex.NewDefault()
-	n int
+	mutexManager = namespacedMutex.New(namespacedMutex.Options{
+		CacheExpiryDuration:      -1,
+		CacheMaxValues:           -1,
+		MasterMutexesBucketCount: 1 << 20,
+	})
 )
 
-const iterations = 2e4
+const iterations = 21
 
 func main() {
-	c := make(chan struct{})
+	var numbers []string
+	var wg sync.WaitGroup
+
+	wg.Add(iterations)
 
 	for i := 1; i <= iterations; i++ {
 		go func(i int) {
-			// a mutex stored under the given namespace will automatically be
-			// locked before and unlocked after the given handler function runs
-			m.Use(func() {
-				if n%2 == 0 {
-					n++
-				} else {
-					n += i
-				}
-			}, false, "main")
+			defer wg.Done()
 
-			// notify the main function that this goroutine has completed its work
-			c <- struct{}{}
+			// when the Use function is called, a mutex stored
+			// under the namespace will automatically be locked
+			// before the handler function runs, and unlocked
+			// once it's finished
+			mutexManager.Use(func() {
+				numbers = append(numbers, strconv.Itoa(i))
+			}, false, "this-is-the-namespace")
 		}(i)
 	}
 
-	for i := 0; i < iterations; i++ {
-		<-c
-	}
+	wg.Wait()
 
-	fmt.Printf("MAGIC NUMBER: %d\n", n)
+	fmt.Println(numbers)
+	fmt.Println(len(numbers))
 }
 ```
