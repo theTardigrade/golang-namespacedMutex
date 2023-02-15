@@ -1,5 +1,9 @@
 # golang-namespacedMutex
 
+This Go package enables mutexes to be accessed based on namespaces.
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/theTardigrade/golang-namespacedMutex/.svg)](https://pkg.go.dev/github.com/theTardigrade/golang-namespacedMutex/) [![Go Report Card](https://goreportcard.com/badge/github.com/theTardigrade/golang-namespacedMutex)](https://goreportcard.com/report/github.com/theTardigrade/golang-namespacedMutex)
+
 ## Example
 
 ```golang
@@ -50,3 +54,9 @@ func main() {
 	fmt.Println(len(numbers))
 }
 ```
+
+## Support
+
+If you use this package, or find any value in it, please consider donating:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S2EIRL0)
