@@ -53,7 +53,7 @@ func main() {
 
 			// you can also use a mutex directly by calling
 			// the GetLocked function
-			mutex := mutexManager.GetLocked(true, "another-namespace")
+			mutex := mutexManager.GetLocked(false, "another-namespace")
 			defer mutex.Unlock()
 
 			numbersList += "(" + numbers[i] + ")"
