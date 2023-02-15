@@ -51,7 +51,7 @@ func main() {
 		go func(i int) {
 			defer wg.Done()
 
-			// you can also use the mutex directly by calling
+			// you can also use a mutex directly by calling
 			// the GetLocked function
 			mutex := mutexManager.GetLocked(true, "another-namespace")
 			defer mutex.Unlock()
