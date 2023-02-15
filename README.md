@@ -15,9 +15,10 @@ import (
 
 var (
 	mutexManager = namespacedMutex.New(namespacedMutex.Options{
-		CacheExpiryDuration:      -1,
-		CacheMaxValues:           -1,
-		MasterMutexesBucketCount: 1 << 20,
+		CacheExpiryDuration:                 -1,
+		CacheMaxValues:                      -1,
+		MasterMutexesBucketCount:            1 << 20,
+		MasterMutexesBucketCountMustBePrime: true,
 	})
 )
 
