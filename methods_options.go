@@ -1,6 +1,10 @@
 package namespacedMutex
 
-import "time"
+import (
+	"time"
+
+	prime "github.com/theTardigrade/golang-prime"
+)
 
 const (
 	optionsDefaultBucketCount         = 1 << 10
@@ -26,6 +30,10 @@ func (d *Datum) initOptions(opts *Options) {
 		}
 	} else {
 		d.masterMutexesBucketCount = optionsDefaultBucketCount
+	}
+
+	if opts.MasterMutexesBucketCountMustBePrime {
+		d.masterMutexesBucketCount = prime.Next(d.masterMutexesBucketCount)
 	}
 
 	if opts.CacheMaxValues == 0 {

@@ -19,10 +19,11 @@ type Datum struct {
 
 // Options is used in the New constructor function.
 type Options struct {
-	CacheExpiryDuration      time.Duration
-	CacheMaxValues           int
-	MasterMutexesBucketCount int
-	NamespaceSeparator       string
+	CacheExpiryDuration                 time.Duration
+	CacheMaxValues                      int
+	MasterMutexesBucketCount            int
+	MasterMutexesBucketCountMustBePrime bool
+	NamespaceSeparator                  string
 }
 
 // New creates a new Datum based on the given options;
