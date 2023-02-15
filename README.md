@@ -1,6 +1,6 @@
 # golang-namespacedMutex
 
-This Go package enables a large number of mutexes to be stored and accessed based on namespaces.
+This Go package enables a theoretically infinite number of mutexes to be stored and accessed based on namespaces.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/theTardigrade/golang-namespacedMutex/.svg)](https://pkg.go.dev/github.com/theTardigrade/golang-namespacedMutex/) [![Go Report Card](https://goreportcard.com/badge/github.com/theTardigrade/golang-namespacedMutex)](https://goreportcard.com/report/github.com/theTardigrade/golang-namespacedMutex)
 
