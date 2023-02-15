@@ -17,12 +17,10 @@ import (
 	namespacedMutex "github.com/theTardigrade/golang-namespacedMutex"
 )
 
-var (
-	mutexManager = namespacedMutex.New(namespacedMutex.Options{
-		MasterMutexesBucketCount:            1 << 5,
-		MasterMutexesBucketCountMustBePrime: true,
-	})
-)
+var mutexManager = namespacedMutex.New(namespacedMutex.Options{
+	MasterMutexesBucketCount:            1 << 5,
+	MasterMutexesBucketCountMustBePrime: true,
+})
 
 const iterations = 100
 
