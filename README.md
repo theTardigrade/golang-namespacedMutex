@@ -22,15 +22,13 @@ var mutexManager = namespacedMutex.New(namespacedMutex.Options{
 	MasterMutexesBucketCountMustBePrime: true,
 })
 
-const iterations = 100
-
 func main() {
 	var numbers []string
 	var wg sync.WaitGroup
 
 	wg.Add(iterations)
 
-	for i := 1; i <= iterations; i++ {
+	for i := 1; i <= 100; i++ {
 		go func(i int) {
 			defer wg.Done()
 
