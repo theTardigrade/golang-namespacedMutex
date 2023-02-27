@@ -27,16 +27,7 @@ func New(opts *Options) *Datum {
 	d := Datum{}
 
 	d.initOptions(opts)
-
-	{
-		bc := d.bucketCount
-
-		d.mutexes = make([]*sync.RWMutex, bc)
-
-		for bc--; bc >= 0; bc-- {
-			d.mutexes[bc] = new(sync.RWMutex)
-		}
-	}
+	d.initMutexes()
 
 	return &d
 }

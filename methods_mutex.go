@@ -6,6 +6,16 @@ import (
 	hash "github.com/theTardigrade/golang-hash"
 )
 
+func (d *Datum) initMutexes() {
+	bc := d.bucketCount
+
+	d.mutexes = make([]*sync.RWMutex, bc)
+
+	for bc--; bc >= 0; bc-- {
+		d.mutexes[bc] = new(sync.RWMutex)
+	}
+}
+
 func (d *Datum) mutexHashFromNamespace(namespace string) int {
 	keyHash := hash.Uint256String(namespace)
 
