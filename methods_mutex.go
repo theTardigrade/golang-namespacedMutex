@@ -7,10 +7,9 @@ import (
 )
 
 func (d *Datum) mutexHashFromNamespace(namespace string) int {
-	keyHash := hash.Uint64String(namespace)
-	count := uint64(d.mutexesBucketCount)
+	keyHash := hash.Uint256String(namespace)
 
-	return int(keyHash % count)
+	return int(keyHash.Mod(keyHash, d.mutexesBucketCountBig).Uint64())
 }
 
 func (d *Datum) mutexFromHash(hash int) *sync.RWMutex {
@@ -20,5 +19,5 @@ func (d *Datum) mutexFromHash(hash int) *sync.RWMutex {
 func (d *Datum) mutexFromNamespace(namespace string) *sync.RWMutex {
 	hash := d.mutexHashFromNamespace(namespace)
 
-	return d.mutexFromHash(hash)
+	return d.mutexes[hash]
 }

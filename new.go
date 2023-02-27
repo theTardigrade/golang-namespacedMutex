@@ -1,14 +1,16 @@
 package namespacedMutex
 
 import (
+	"math/big"
 	"sync"
 )
 
 // Datum is used as the main return type, producing
 // namespaced mutexes on demand.
 type Datum struct {
-	mutexes            []*sync.RWMutex
-	mutexesBucketCount int
+	mutexes               []*sync.RWMutex
+	mutexesBucketCount    int
+	mutexesBucketCountBig *big.Int
 }
 
 // Options is used in the New constructor function.

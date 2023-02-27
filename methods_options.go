@@ -2,6 +2,7 @@ package namespacedMutex
 
 import (
 	"math"
+	"math/big"
 
 	prime "github.com/theTardigrade/golang-prime"
 )
@@ -11,7 +12,7 @@ const (
 )
 
 const (
-	optionsMaxBucketCount = 1 << 30
+	optionsMaxBucketCount = math.MaxInt
 )
 
 func (d *Datum) initOptions(opts *Options) {
@@ -42,4 +43,6 @@ func (d *Datum) initOptions(opts *Options) {
 			d.mutexesBucketCount = int(bucketCount64)
 		}
 	}
+
+	d.mutexesBucketCountBig = big.NewInt(int64(d.mutexesBucketCount))
 }
