@@ -1,13 +1,13 @@
 package namespacedMutex
 
-// GetLocked returns a locked mutex based on the primary and secondary namespaces;
-// it must be unlocked after use. The lock will be either read-only or read-write.
+// GetLocked returns a locked mutex based on the given namespaces.
+// The mutex must be unlocked after use, and its lock will be
+// either read-only or read-write.
 func (d *Datum) GetLocked(
 	isReadOnly bool,
-	primaryNamespace string,
-	secondaryNamespaces ...string,
+	namespaces ...string,
 ) (mutex *MutexWrapper) {
-	rawMutex := d.mutex(primaryNamespace, secondaryNamespaces...)
+	rawMutex := d.mutex(namespaces)
 
 	mutex = &MutexWrapper{
 		rawMutex:   rawMutex,
@@ -19,12 +19,41 @@ func (d *Datum) GetLocked(
 	return
 }
 
+// GetLockedIfUnique attempts to return a locked mutex based on the given namespaces.
+// However, if any collection of namespaces from the list of excluded namespaces
+// produces the same mutex, then no mutex will be returned or locked.
+// If a mutex is found, it must be unlocked after use, and its lock will be
+// either read-only or read-write.
+func (d *Datum) GetLockedIfUnique(
+	isReadOnly bool,
+	namespaces []string,
+	excludedNamespaces [][]string,
+) (mutex *MutexWrapper, found bool) {
+	rawMutex := d.mutex(namespaces)
+
+	for _, n := range excludedNamespaces {
+		if d.mutex(n) == rawMutex {
+			return
+		}
+	}
+
+	mutex = &MutexWrapper{
+		rawMutex:   rawMutex,
+		isReadOnly: isReadOnly,
+	}
+	found = true
+
+	mutex.lock()
+
+	return
+}
+
 // Use allows code to be run within the handler function
 // while the mutex is automatically locked and unlocked
 // before and after use. It abstracts away the problem
 // of mutual exclusion.
-func (d *Datum) Use(handler func(), isReadOnly bool, primaryNamespace string, secondaryNamespaces ...string) {
-	mutex := d.GetLocked(isReadOnly, primaryNamespace, secondaryNamespaces...)
+func (d *Datum) Use(handler func(), isReadOnly bool, namespaces ...string) {
+	mutex := d.GetLocked(isReadOnly, namespaces...)
 	defer mutex.unlock()
 
 	handler()

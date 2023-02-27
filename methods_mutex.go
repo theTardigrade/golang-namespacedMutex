@@ -7,34 +7,37 @@ import (
 	hash "github.com/theTardigrade/golang-hash"
 )
 
-func (d *Datum) mutexKey(primaryNamespace string, secondaryNamespaces []string) string {
-	if len(secondaryNamespaces) == 0 {
-		return primaryNamespace
+func (d *Datum) mutexKey(namespaces []string) string {
+	switch len(namespaces) {
+	case 0:
+		return ""
+	case 1:
+		return namespaces[0]
 	}
 
 	var builder strings.Builder
-
-	builder.WriteString(primaryNamespace)
-
 	separator := d.namespaceSeparator
 
-	for _, n := range secondaryNamespaces {
-		builder.WriteString(separator)
+	for i, n := range namespaces {
+		if i > 0 {
+			builder.WriteString(separator)
+		}
+
 		builder.WriteString(n)
 	}
 
 	return builder.String()
 }
 
-func (d *Datum) mutexHash(namespace string) int {
-	namespaceHash := hash.Uint64String(namespace)
+func (d *Datum) mutexHash(key string) int {
+	keyHash := hash.Uint64String(key)
 	count := uint64(d.mutexesBucketCount)
 
-	return int(namespaceHash % count)
+	return int(keyHash % count)
 }
 
-func (d *Datum) mutex(primaryNamespace string, secondaryNamespaces ...string) *sync.RWMutex {
-	key := d.mutexKey(primaryNamespace, secondaryNamespaces)
+func (d *Datum) mutex(namespaces []string) *sync.RWMutex {
+	key := d.mutexKey(namespaces)
 	hash := d.mutexHash(key)
 
 	return d.mutexes[hash]
