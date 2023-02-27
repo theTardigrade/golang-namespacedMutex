@@ -1,5 +1,10 @@
 package namespacedMutex
 
+import (
+	"strconv"
+	"sync"
+)
+
 // GetLocked returns a locked mutex based on the given namespaces.
 // The mutex must be unlocked after use, and its lock will be
 // either read-only or read-write.
@@ -19,6 +24,10 @@ func (d *Datum) GetLocked(
 	return
 }
 
+const (
+	getLockedIfUniqueMaxAttempts = 1 << 12
+)
+
 // GetLockedIfUnique attempts to return a locked mutex based on the given namespaces.
 // However, if any collection of namespaces from the list of excluded namespaces
 // produces the same mutex, then no mutex will be returned or locked.
@@ -30,10 +39,43 @@ func (d *Datum) GetLockedIfUnique(
 	excludedNamespaces [][]string,
 ) (mutex *MutexWrapper, found bool) {
 	rawMutex := d.mutex(namespaces)
+	found = true
 
 	for _, n := range excludedNamespaces {
 		if d.mutex(n) == rawMutex {
-			return
+			found = false
+			break
+		}
+	}
+
+	if !found && d.mutexesBucketCount > 1 {
+		seenMutexes := make(map[*sync.RWMutex]struct{})
+
+		seenMutexes[rawMutex] = struct{}{}
+
+		for i := 2; i <= getLockedIfUniqueMaxAttempts; i++ {
+			namespacesForAttempt := append([]string{
+				strconv.FormatInt(int64(i), 36),
+			}, namespaces...)
+
+			rawMutex = d.mutex(namespacesForAttempt)
+			if _, seen := seenMutexes[rawMutex]; seen {
+				continue
+			}
+			found = true
+
+			for _, n := range excludedNamespaces {
+				if d.mutex(n) == rawMutex {
+					found = false
+					break
+				}
+			}
+
+			if found {
+				break
+			}
+
+			seenMutexes[rawMutex] = struct{}{}
 		}
 	}
 
@@ -41,7 +83,6 @@ func (d *Datum) GetLockedIfUnique(
 		rawMutex:   rawMutex,
 		isReadOnly: isReadOnly,
 	}
-	found = true
 
 	mutex.lock()
 
