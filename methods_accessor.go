@@ -26,6 +26,8 @@ const (
 // GetLockedIfUnique attempts to return a locked mutex based on the given namespace.
 // However, if any of the comparison namespaces give the same mutex,
 // then no mutex will be returned or locked.
+// A number of other primary keys, related to the first, will be attempted
+// before the search for a unique mutex is ended.
 // If a mutex is found, it must be unlocked after use, and its lock will be
 // either read-only or read-write.
 func (d *Datum) GetLockedIfUnique(
