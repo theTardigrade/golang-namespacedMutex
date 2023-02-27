@@ -9,14 +9,16 @@ import (
 // namespaced mutexes on demand.
 type Datum struct {
 	mutexes               []*sync.RWMutex
-	mutexesBucketCount    int
-	mutexesBucketCountBig *big.Int
+	bucketCount           int
+	bucketCountBig        *big.Int
+	maxUniqueAttemptCount int
 }
 
 // Options is used in the New constructor function.
 type Options struct {
-	MutexesBucketCount            int
-	MutexesBucketCountMustBePrime bool
+	BucketCount              int
+	BucketCountShouldBePrime bool
+	MaxUniqueAttemptCount    int
 }
 
 // New creates a new Datum based on the given options;
@@ -27,7 +29,7 @@ func New(opts Options) *Datum {
 	d.initOptions(&opts)
 
 	{
-		bc := d.mutexesBucketCount
+		bc := d.bucketCount
 
 		d.mutexes = make([]*sync.RWMutex, bc)
 

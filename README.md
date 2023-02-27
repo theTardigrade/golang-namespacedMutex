@@ -18,8 +18,8 @@ import (
 )
 
 var mutexManager = namespacedMutex.New(namespacedMutex.Options{
-	MutexesBucketCount:            1 << 5,
-	MutexesBucketCountMustBePrime: true,
+	BucketCount:              1 << 5,
+	BucketCountShouldBePrime: true,
 })
 
 func main() {

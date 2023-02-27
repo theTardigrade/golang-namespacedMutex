@@ -19,10 +19,6 @@ func (d *Datum) GetLocked(
 	return
 }
 
-const (
-	getLockedIfUniqueMaxAttemptCount = 1 << 12
-)
-
 // GetLockedIfUnique attempts to return a locked mutex based on the given namespace.
 // However, if any of the comparison namespaces give the same mutex,
 // then no mutex will be returned or locked.
@@ -45,10 +41,10 @@ func (d *Datum) GetLockedIfUnique(
 		}
 	}
 
-	if !found && d.mutexesBucketCount > 1 {
-		attemptCount := getLockedIfUniqueMaxAttemptCount
-		if attemptCount > d.mutexesBucketCount {
-			attemptCount = d.mutexesBucketCount
+	if !found && d.bucketCount > 1 {
+		attemptCount := d.maxUniqueAttemptCount
+		if attemptCount > d.bucketCount {
+			attemptCount = d.bucketCount
 		}
 
 		if attemptCount >= 2 {

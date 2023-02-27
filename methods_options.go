@@ -8,11 +8,8 @@ import (
 )
 
 const (
-	optionsDefaultBucketCount = 1 << 10
-)
-
-const (
-	optionsMaxBucketCount = math.MaxInt
+	optionsDefaultBucketCount           = 1 << 10
+	optionsDefaultMaxUniqueAttemptCount = 1 << 12
 )
 
 func (d *Datum) initOptions(opts *Options) {
@@ -20,29 +17,31 @@ func (d *Datum) initOptions(opts *Options) {
 		*opts = Options{}
 	}
 
-	if opts.MutexesBucketCount > 0 {
-		if opts.MutexesBucketCount <= optionsMaxBucketCount {
-			d.mutexesBucketCount = opts.MutexesBucketCount
-		} else {
-			d.mutexesBucketCount = optionsMaxBucketCount
-		}
+	if opts.BucketCount > 0 {
+		d.bucketCount = opts.BucketCount
 	} else {
-		d.mutexesBucketCount = optionsDefaultBucketCount
+		d.bucketCount = optionsDefaultBucketCount
 	}
 
-	if opts.MutexesBucketCountMustBePrime && !prime.Is(int64(d.mutexesBucketCount)) {
+	if opts.BucketCountShouldBePrime && !prime.Is(int64(d.bucketCount)) {
 		var exists bool
 		var bucketCount64 int64
 
-		bucketCount64, exists = prime.Next(int64(d.mutexesBucketCount))
+		bucketCount64, exists = prime.Next(int64(d.bucketCount))
 		if !exists || bucketCount64 > math.MaxInt {
-			bucketCount64, exists = prime.Prev(int64(d.mutexesBucketCount))
+			bucketCount64, exists = prime.Prev(int64(d.bucketCount))
 		}
 
 		if exists && bucketCount64 <= math.MaxInt {
-			d.mutexesBucketCount = int(bucketCount64)
+			d.bucketCount = int(bucketCount64)
 		}
 	}
 
-	d.mutexesBucketCountBig = big.NewInt(int64(d.mutexesBucketCount))
+	d.bucketCountBig = big.NewInt(int64(d.bucketCount))
+
+	if opts.MaxUniqueAttemptCount > 0 {
+		d.maxUniqueAttemptCount = opts.MaxUniqueAttemptCount
+	} else {
+		d.maxUniqueAttemptCount = optionsDefaultMaxUniqueAttemptCount
+	}
 }

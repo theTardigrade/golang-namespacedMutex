@@ -9,7 +9,7 @@ import (
 func (d *Datum) mutexHashFromNamespace(namespace string) int {
 	keyHash := hash.Uint256String(namespace)
 
-	return int(keyHash.Mod(keyHash, d.mutexesBucketCountBig).Uint64())
+	return int(keyHash.Mod(keyHash, d.bucketCountBig).Uint64())
 }
 
 func (d *Datum) mutexFromHash(hash int) *sync.RWMutex {
