@@ -41,33 +41,26 @@ func (d *Datum) GetLockedIfUnique(
 		}
 	}
 
-	if !found && d.bucketCount > 1 {
-		attemptCount := d.maxUniqueAttemptCount
-		if attemptCount > d.bucketCount {
-			attemptCount = d.bucketCount
+	if !found && d.maxUniqueAttemptCount > 1 {
+		comparisonHashes := make([]int, len(comparisonNamespaces))
+
+		for i, n := range comparisonNamespaces {
+			comparisonHashes[i] = d.mutexHashFromNamespace(n)
 		}
 
-		if attemptCount >= 2 {
-			comparisonHashes := make([]int, len(comparisonNamespaces))
+		for i := 2; i <= d.maxUniqueAttemptCount; i++ {
+			hash++
+			found = true
 
-			for i, n := range comparisonNamespaces {
-				comparisonHashes[i] = d.mutexHashFromNamespace(n)
-			}
-
-			for i := 2; i <= attemptCount; i++ {
-				hash++
-				found = true
-
-				for _, h := range comparisonHashes {
-					if h == hash {
-						found = false
-						break
-					}
-				}
-
-				if found {
+			for _, h := range comparisonHashes {
+				if h == hash {
+					found = false
 					break
 				}
+			}
+
+			if found {
+				break
 			}
 		}
 	}

@@ -44,4 +44,8 @@ func (d *Datum) initOptions(opts *Options) {
 	} else {
 		d.maxUniqueAttemptCount = optionsDefaultMaxUniqueAttemptCount
 	}
+
+	if d.maxUniqueAttemptCount > d.bucketCount {
+		d.maxUniqueAttemptCount = d.bucketCount
+	}
 }
