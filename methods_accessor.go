@@ -1,10 +1,5 @@
 package namespacedMutex
 
-import (
-	"strconv"
-	"sync"
-)
-
 // GetLocked returns a locked mutex based on the given namespaces.
 // The mutex must be unlocked after use, and its lock will be
 // either read-only or read-write.
@@ -12,7 +7,7 @@ func (d *Datum) GetLocked(
 	isReadOnly bool,
 	namespaces ...string,
 ) (mutex *MutexWrapper) {
-	rawMutex := d.mutex(namespaces)
+	rawMutex := d.mutexFromNamespaces(namespaces)
 
 	mutex = &MutexWrapper{
 		rawMutex:   rawMutex,
@@ -25,7 +20,7 @@ func (d *Datum) GetLocked(
 }
 
 const (
-	getLockedIfUniqueMaxAttempts = 1 << 12
+	getLockedIfUniqueMaxAttemptCount = 1 << 12
 )
 
 // GetLockedIfUnique attempts to return a locked mutex based on the given namespaces.
@@ -38,53 +33,55 @@ func (d *Datum) GetLockedIfUnique(
 	namespaces []string,
 	excludedNamespaces [][]string,
 ) (mutex *MutexWrapper, found bool) {
-	rawMutex := d.mutex(namespaces)
+	hash := d.mutexHashFromNamespaces(namespaces)
 	found = true
 
 	for _, n := range excludedNamespaces {
-		if d.mutex(n) == rawMutex {
+		if d.mutexHashFromNamespaces(n) == hash {
 			found = false
 			break
 		}
 	}
 
 	if !found && d.mutexesBucketCount > 1 {
-		seenMutexes := make(map[*sync.RWMutex]struct{})
+		attemptCount := getLockedIfUniqueMaxAttemptCount
+		if attemptCount > d.mutexesBucketCount {
+			attemptCount = d.mutexesBucketCount
+		}
 
-		seenMutexes[rawMutex] = struct{}{}
+		if attemptCount >= 2 {
+			excludedHashes := make([]int, len(excludedNamespaces))
 
-		for i := 2; i <= getLockedIfUniqueMaxAttempts; i++ {
-			namespacesForAttempt := append([]string{
-				strconv.FormatInt(int64(i), 36),
-			}, namespaces...)
-
-			rawMutex = d.mutex(namespacesForAttempt)
-			if _, seen := seenMutexes[rawMutex]; seen {
-				continue
+			for i, n := range excludedNamespaces {
+				excludedHashes[i] = d.mutexHashFromNamespaces(n)
 			}
-			found = true
 
-			for _, n := range excludedNamespaces {
-				if d.mutex(n) == rawMutex {
-					found = false
+			for i := 2; i <= attemptCount; i++ {
+				hash++
+				found = true
+
+				for _, h := range excludedHashes {
+					if h == hash {
+						found = false
+						break
+					}
+				}
+
+				if found {
 					break
 				}
 			}
-
-			if found {
-				break
-			}
-
-			seenMutexes[rawMutex] = struct{}{}
 		}
 	}
 
-	mutex = &MutexWrapper{
-		rawMutex:   rawMutex,
-		isReadOnly: isReadOnly,
-	}
+	if found {
+		mutex = &MutexWrapper{
+			rawMutex:   d.mutexFromHash(hash),
+			isReadOnly: isReadOnly,
+		}
 
-	mutex.lock()
+		mutex.lock()
+	}
 
 	return
 }

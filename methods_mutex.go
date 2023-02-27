@@ -7,7 +7,7 @@ import (
 	hash "github.com/theTardigrade/golang-hash"
 )
 
-func (d *Datum) mutexKey(namespaces []string) string {
+func (d *Datum) mutexKeyFromNamespaces(namespaces []string) string {
 	switch len(namespaces) {
 	case 0:
 		return ""
@@ -29,16 +29,25 @@ func (d *Datum) mutexKey(namespaces []string) string {
 	return builder.String()
 }
 
-func (d *Datum) mutexHash(key string) int {
+func (d *Datum) mutexHashFromKey(key string) int {
 	keyHash := hash.Uint64String(key)
 	count := uint64(d.mutexesBucketCount)
 
 	return int(keyHash % count)
 }
 
-func (d *Datum) mutex(namespaces []string) *sync.RWMutex {
-	key := d.mutexKey(namespaces)
-	hash := d.mutexHash(key)
+func (d *Datum) mutexHashFromNamespaces(namespaces []string) int {
+	key := d.mutexKeyFromNamespaces(namespaces)
 
+	return d.mutexHashFromKey(key)
+}
+
+func (d *Datum) mutexFromHash(hash int) *sync.RWMutex {
 	return d.mutexes[hash]
+}
+
+func (d *Datum) mutexFromNamespaces(namespaces []string) *sync.RWMutex {
+	hash := d.mutexHashFromNamespaces(namespaces)
+
+	return d.mutexFromHash(hash)
 }
