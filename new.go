@@ -23,10 +23,10 @@ type Options struct {
 
 // New creates a new Datum based on the given options;
 // default options will be used, if necessary.
-func New(opts Options) *Datum {
+func New(opts *Options) *Datum {
 	d := Datum{}
 
-	d.initOptions(&opts)
+	d.initOptions(opts)
 
 	{
 		bc := d.bucketCount
@@ -44,5 +44,5 @@ func New(opts Options) *Datum {
 // NewDefault is equivalent to the New constructor
 // function with default options.
 func NewDefault() *Datum {
-	return New(Options{})
+	return New(nil)
 }

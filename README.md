@@ -17,7 +17,7 @@ import (
 	namespacedMutex "github.com/theTardigrade/golang-namespacedMutex"
 )
 
-var mutexManager = namespacedMutex.New(namespacedMutex.Options{
+var mutexManager = namespacedMutex.New(&namespacedMutex.Options{
 	BucketCount:              1 << 5,
 	BucketCountShouldBePrime: true,
 })

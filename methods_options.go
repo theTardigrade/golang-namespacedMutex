@@ -14,7 +14,7 @@ const (
 
 func (d *Datum) initOptions(opts *Options) {
 	if opts == nil {
-		*opts = Options{}
+		opts = new(Options)
 	}
 
 	if opts.BucketCount > 0 {
