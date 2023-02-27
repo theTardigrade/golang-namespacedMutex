@@ -36,9 +36,9 @@ func main() {
 			// under the namespace will automatically be locked
 			// before the handler function runs, and unlocked
 			// once it's finished
-			mutexManager.Use(func() {
+			mutexManager.Use(false, "this-is-the-namespace", func() {
 				numbers = append(numbers, strconv.Itoa(i))
-			}, false, "this-is-the-namespace")
+			})
 		}(i)
 	}
 

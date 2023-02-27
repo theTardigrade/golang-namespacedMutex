@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	optionsDefaultBucketCount        = 1 << 10
-	optionsDefaultNamespaceSeparator = "__::__"
+	optionsDefaultBucketCount = 1 << 10
 )
 
 const (
@@ -42,11 +41,5 @@ func (d *Datum) initOptions(opts *Options) {
 		if exists && bucketCount64 <= math.MaxInt {
 			d.mutexesBucketCount = int(bucketCount64)
 		}
-	}
-
-	if opts.NamespaceSeparator == "" {
-		d.namespaceSeparator = optionsDefaultNamespaceSeparator
-	} else {
-		d.namespaceSeparator = opts.NamespaceSeparator
 	}
 }

@@ -9,14 +9,12 @@ import (
 type Datum struct {
 	mutexes            []*sync.RWMutex
 	mutexesBucketCount int
-	namespaceSeparator string
 }
 
 // Options is used in the New constructor function.
 type Options struct {
 	MutexesBucketCount            int
 	MutexesBucketCountMustBePrime bool
-	NamespaceSeparator            string
 }
 
 // New creates a new Datum based on the given options;

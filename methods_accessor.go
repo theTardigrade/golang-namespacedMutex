@@ -1,13 +1,13 @@
 package namespacedMutex
 
-// GetLocked returns a locked mutex based on the given namespaces.
+// GetLocked returns a locked mutex based on the given namespace.
 // The mutex must be unlocked after use, and its lock will be
 // either read-only or read-write.
 func (d *Datum) GetLocked(
 	isReadOnly bool,
-	namespaces ...string,
+	namespace string,
 ) (mutex *MutexWrapper) {
-	rawMutex := d.mutexFromNamespaces(namespaces)
+	rawMutex := d.mutexFromNamespace(namespace)
 
 	mutex = &MutexWrapper{
 		rawMutex:   rawMutex,
@@ -23,21 +23,21 @@ const (
 	getLockedIfUniqueMaxAttemptCount = 1 << 12
 )
 
-// GetLockedIfUnique attempts to return a locked mutex based on the given namespaces.
-// However, if any collection of namespaces from the list of excluded namespaces
-// produces the same mutex, then no mutex will be returned or locked.
+// GetLockedIfUnique attempts to return a locked mutex based on the given namespace.
+// However, if any of the comparison namespaces give the same mutex,
+// then no mutex will be returned or locked.
 // If a mutex is found, it must be unlocked after use, and its lock will be
 // either read-only or read-write.
 func (d *Datum) GetLockedIfUnique(
 	isReadOnly bool,
-	namespaces []string,
-	excludedNamespaces [][]string,
+	namespace string,
+	comparisonNamespaces ...string,
 ) (mutex *MutexWrapper, found bool) {
-	hash := d.mutexHashFromNamespaces(namespaces)
+	hash := d.mutexHashFromNamespace(namespace)
 	found = true
 
-	for _, n := range excludedNamespaces {
-		if d.mutexHashFromNamespaces(n) == hash {
+	for _, n := range comparisonNamespaces {
+		if d.mutexHashFromNamespace(n) == hash {
 			found = false
 			break
 		}
@@ -50,17 +50,17 @@ func (d *Datum) GetLockedIfUnique(
 		}
 
 		if attemptCount >= 2 {
-			excludedHashes := make([]int, len(excludedNamespaces))
+			comparisonHashes := make([]int, len(comparisonNamespaces))
 
-			for i, n := range excludedNamespaces {
-				excludedHashes[i] = d.mutexHashFromNamespaces(n)
+			for i, n := range comparisonNamespaces {
+				comparisonHashes[i] = d.mutexHashFromNamespace(n)
 			}
 
 			for i := 2; i <= attemptCount; i++ {
 				hash++
 				found = true
 
-				for _, h := range excludedHashes {
+				for _, h := range comparisonHashes {
 					if h == hash {
 						found = false
 						break
@@ -90,8 +90,8 @@ func (d *Datum) GetLockedIfUnique(
 // while the mutex is automatically locked and unlocked
 // before and after use. It abstracts away the problem
 // of mutual exclusion.
-func (d *Datum) Use(handler func(), isReadOnly bool, namespaces ...string) {
-	mutex := d.GetLocked(isReadOnly, namespaces...)
+func (d *Datum) Use(isReadOnly bool, namespace string, handler func()) {
+	mutex := d.GetLocked(isReadOnly, namespace)
 	defer mutex.unlock()
 
 	handler()
