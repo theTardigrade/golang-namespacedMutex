@@ -2,24 +2,21 @@ package namespacedMutex
 
 import (
 	"sync"
-
-	cache "github.com/theTardigrade/golang-cache"
 )
 
 // Datum is used as the main return type, producing
 // namespaced mutexes on demand.
 type Datum struct {
-	cache                    *cache.Cache
-	masterMutexes            []*sync.Mutex
-	masterMutexesBucketCount int
-	namespaceSeparator       string
+	mutexes            []*sync.RWMutex
+	mutexesBucketCount int
+	namespaceSeparator string
 }
 
 // Options is used in the New constructor function.
 type Options struct {
-	MasterMutexesBucketCount            int
-	MasterMutexesBucketCountMustBePrime bool
-	NamespaceSeparator                  string
+	MutexesBucketCount            int
+	MutexesBucketCountMustBePrime bool
+	NamespaceSeparator            string
 }
 
 // New creates a new Datum based on the given options;
@@ -30,20 +27,14 @@ func New(opts Options) *Datum {
 	d.initOptions(&opts)
 
 	{
-		bc := d.masterMutexesBucketCount
+		bc := d.mutexesBucketCount
 
-		d.masterMutexes = make([]*sync.Mutex, bc)
+		d.mutexes = make([]*sync.RWMutex, bc)
 
 		for bc--; bc >= 0; bc-- {
-			m := sync.Mutex{}
-			d.masterMutexes[bc] = &m
+			d.mutexes[bc] = new(sync.RWMutex)
 		}
 	}
-
-	d.cache = cache.NewCacheWithOptions(cache.Options{
-		ExpiryDuration: -1,
-		MaxValues:      -1,
-	})
 
 	return &d
 }

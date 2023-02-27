@@ -1,6 +1,8 @@
 package namespacedMutex
 
 import (
+	"math"
+
 	prime "github.com/theTardigrade/golang-prime"
 )
 
@@ -18,18 +20,28 @@ func (d *Datum) initOptions(opts *Options) {
 		*opts = Options{}
 	}
 
-	if opts.MasterMutexesBucketCount > 0 {
-		if opts.MasterMutexesBucketCount <= optionsMaxBucketCount {
-			d.masterMutexesBucketCount = opts.MasterMutexesBucketCount
+	if opts.MutexesBucketCount > 0 {
+		if opts.MutexesBucketCount <= optionsMaxBucketCount {
+			d.mutexesBucketCount = opts.MutexesBucketCount
 		} else {
-			d.masterMutexesBucketCount = optionsMaxBucketCount
+			d.mutexesBucketCount = optionsMaxBucketCount
 		}
 	} else {
-		d.masterMutexesBucketCount = optionsDefaultBucketCount
+		d.mutexesBucketCount = optionsDefaultBucketCount
 	}
 
-	if opts.MasterMutexesBucketCountMustBePrime {
-		d.masterMutexesBucketCount = prime.Next(d.masterMutexesBucketCount)
+	if opts.MutexesBucketCountMustBePrime && !prime.Is(int64(d.mutexesBucketCount)) {
+		var exists bool
+		var bucketCount64 int64
+
+		bucketCount64, exists = prime.Next(int64(d.mutexesBucketCount))
+		if !exists || bucketCount64 > math.MaxInt {
+			bucketCount64, exists = prime.Prev(int64(d.mutexesBucketCount))
+		}
+
+		if exists && bucketCount64 <= math.MaxInt {
+			d.mutexesBucketCount = int(bucketCount64)
+		}
 	}
 
 	if opts.NamespaceSeparator == "" {
