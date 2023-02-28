@@ -54,7 +54,6 @@ func (d *Datum) GetLockedIfUnique(
 					hash = 0
 				} else {
 					hash++
-					hash %= d.bucketCount
 				}
 
 				found = true
