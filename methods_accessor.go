@@ -31,13 +31,14 @@ func (d *Datum) GetLockedIfUnique(
 	namespace string,
 	comparisonNamespaces ...string,
 ) (mutex *MutexWrapper, found bool) {
-	hash := d.mutexHashFromNamespace(namespace)
 	found = true
 
 	if len(comparisonNamespaces) == 0 {
 		mutex = d.GetLocked(false, namespace)
 		return
 	}
+
+	hash := d.mutexHashFromNamespace(namespace)
 
 	for _, n := range comparisonNamespaces {
 		if d.mutexHashFromNamespace(n) == hash {
