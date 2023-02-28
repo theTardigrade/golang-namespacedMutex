@@ -31,42 +31,38 @@ func (d *Datum) GetLockedIfUnique(
 	namespace string,
 	comparisonNamespaces ...string,
 ) (mutex *MutexWrapper, found bool) {
+	hash := d.mutexHashFromNamespace(namespace)
 	found = true
 
-	if len(comparisonNamespaces) == 0 {
-		mutex = d.GetLocked(false, namespace)
-		return
-	}
-
-	hash := d.mutexHashFromNamespace(namespace)
-
-	for _, n := range comparisonNamespaces {
-		if d.mutexHashFromNamespace(n) == hash {
-			found = false
-			break
-		}
-	}
-
-	if !found && d.maxUniqueAttemptCount > 1 {
-		comparisonHashes := make([]int, len(comparisonNamespaces))
-
-		for i, n := range comparisonNamespaces {
-			comparisonHashes[i] = d.mutexHashFromNamespace(n)
+	if len(comparisonNamespaces) > 0 {
+		for _, n := range comparisonNamespaces {
+			if d.mutexHashFromNamespace(n) == hash {
+				found = false
+				break
+			}
 		}
 
-		for i := 2; i <= d.maxUniqueAttemptCount; i++ {
-			hash++
-			found = true
+		if !found && d.maxUniqueAttemptCount > 1 {
+			comparisonHashes := make([]int, len(comparisonNamespaces))
 
-			for _, h := range comparisonHashes {
-				if h == hash {
-					found = false
-					break
-				}
+			for i, n := range comparisonNamespaces {
+				comparisonHashes[i] = d.mutexHashFromNamespace(n)
 			}
 
-			if found {
-				break
+			for i := 2; i <= d.maxUniqueAttemptCount; i++ {
+				hash++
+				found = true
+
+				for _, h := range comparisonHashes {
+					if h == hash {
+						found = false
+						break
+					}
+				}
+
+				if found {
+					break
+				}
 			}
 		}
 	}
