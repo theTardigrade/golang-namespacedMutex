@@ -50,7 +50,7 @@ func (d *Datum) GetLockedIfUnique(
 			}
 
 			for i := 2; i <= d.maxUniqueAttemptCount; i++ {
-				if hash == d.bucketCount {
+				if hash == d.bucketCount-1 {
 					hash = 0
 				} else {
 					hash++
