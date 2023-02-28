@@ -8,13 +8,7 @@ func (d *Datum) GetLocked(
 	namespace string,
 ) (mutex *MutexWrapper) {
 	rawMutex := d.mutexFromNamespace(namespace)
-
-	mutex = &MutexWrapper{
-		rawMutex:   rawMutex,
-		isReadOnly: isReadOnly,
-	}
-
-	mutex.lock()
+	mutex = newMutexWrapper(rawMutex, isReadOnly, true)
 
 	return
 }
@@ -73,24 +67,9 @@ func (d *Datum) GetLockedIfUnique(
 	}
 
 	if found {
-		mutex = &MutexWrapper{
-			rawMutex:   d.mutexFromIndex(index),
-			isReadOnly: isReadOnly,
-		}
-
-		mutex.lock()
+		rawMutex := d.mutexFromIndex(index)
+		mutex = newMutexWrapper(rawMutex, isReadOnly, true)
 	}
 
 	return
-}
-
-// Use allows code to be run within the handler function
-// while the mutex is automatically locked and unlocked
-// before and after use. It abstracts away the problem
-// of mutual exclusion.
-func (d *Datum) Use(isReadOnly bool, namespace string, handler func()) {
-	mutex := d.GetLocked(isReadOnly, namespace)
-	defer mutex.unlock()
-
-	handler()
 }

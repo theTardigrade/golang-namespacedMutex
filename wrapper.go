@@ -11,6 +11,19 @@ type MutexWrapper struct {
 	isUnlocked  bool
 }
 
+func newMutexWrapper(rawMutex *sync.RWMutex, isReadOnly, shouldLock bool) *MutexWrapper {
+	m := MutexWrapper{
+		rawMutex:   rawMutex,
+		isReadOnly: isReadOnly,
+	}
+
+	if shouldLock {
+		m.lock()
+	}
+
+	return &m
+}
+
 func (m *MutexWrapper) lock() {
 	if m.isReadOnly {
 		m.rawMutex.RLock()
