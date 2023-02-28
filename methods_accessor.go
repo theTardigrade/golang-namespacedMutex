@@ -50,7 +50,13 @@ func (d *Datum) GetLockedIfUnique(
 			}
 
 			for i := 2; i <= d.maxUniqueAttemptCount; i++ {
-				hash++
+				if hash == d.bucketCount {
+					hash = 0
+				} else {
+					hash++
+					hash %= d.bucketCount
+				}
+
 				found = true
 
 				for _, h := range comparisonHashes {
