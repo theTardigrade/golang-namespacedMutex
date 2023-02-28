@@ -1,6 +1,6 @@
 package namespacedMutex
 
-// Use allows code to be run within the handler function
+// UseRandom allows code to be run within the handler function
 // while a mutex based on a randomly generated namespace is
 // automatically locked and unlocked before and after use,
 // abstracting away the problem of mutual exclusion.
