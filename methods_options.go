@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	optionsDefaultBucketCount           = 1 << 10
-	optionsDefaultMaxUniqueAttemptCount = 1 << 12
+	optionsDefaultBucketCount           = 65_537 // next prime number after 1 << 15
+	optionsDefaultMaxUniqueAttemptCount = optionsDefaultBucketCount
 )
 
 func (d *Datum) initOptions(opts *Options) {
