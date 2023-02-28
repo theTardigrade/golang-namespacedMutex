@@ -6,7 +6,7 @@ import (
 	hash "github.com/theTardigrade/golang-hash"
 )
 
-func (d *Datum) initMutexes() {
+func (d *Datum) mutexInit() {
 	bc := d.bucketCount
 
 	d.mutexes = make([]*sync.RWMutex, bc)

@@ -12,7 +12,7 @@ const (
 	optionsDefaultMaxUniqueAttemptCount = optionsDefaultBucketCount
 )
 
-func (d *Datum) initOptions(opts *Options) {
+func (d *Datum) optionsInit(opts *Options) {
 	if opts == nil {
 		opts = new(Options)
 	}

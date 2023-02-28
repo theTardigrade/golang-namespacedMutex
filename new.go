@@ -26,8 +26,8 @@ type Options struct {
 func New(opts *Options) *Datum {
 	d := Datum{}
 
-	d.initOptions(opts)
-	d.initMutexes()
+	d.optionsInit(opts)
+	d.mutexInit()
 
 	return &d
 }
