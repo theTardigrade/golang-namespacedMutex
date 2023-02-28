@@ -16,18 +16,18 @@ func (d *Datum) initMutexes() {
 	}
 }
 
-func (d *Datum) mutexHashFromNamespace(namespace string) int {
-	keyHash := hash.Uint256String(namespace)
+func (d *Datum) mutexIndexFromNamespace(namespace string) int {
+	indexBig := hash.Uint256String(namespace)
 
-	return int(keyHash.Mod(keyHash, d.bucketCountBig).Uint64())
+	return int(indexBig.Mod(indexBig, d.bucketCountBig).Uint64())
 }
 
-func (d *Datum) mutexFromHash(hash int) *sync.RWMutex {
-	return d.mutexes[hash]
+func (d *Datum) mutexFromIndex(index int) *sync.RWMutex {
+	return d.mutexes[index]
 }
 
 func (d *Datum) mutexFromNamespace(namespace string) *sync.RWMutex {
-	hash := d.mutexHashFromNamespace(namespace)
+	index := d.mutexIndexFromNamespace(namespace)
 
-	return d.mutexes[hash]
+	return d.mutexes[index]
 }
